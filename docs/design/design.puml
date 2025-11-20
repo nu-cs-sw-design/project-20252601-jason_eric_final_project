@@ -1,2 +1,234 @@
 @startuml
+
+package model{
+
+  class User {
+    - userId: int
+    - username: String
+    - passwordHash: String
+  }
+
+  ' add strategy pattern for passwordHash
+  
+  class Workout {
+    - workoutId: int
+    - date: Date
+    - name: String
+    - exerciseList: List<Exercise>
+  }
+
+  class Exercise {
+    - exerciseId: int
+    - name: String
+    - sets: int
+    - reps: int
+    - weight: float
+  }
+
+  class FoodLogEntry {
+    - entryId: int
+    - date: Date
+    - foodName: String
+    - calories: int
+  }
+
+  class BodyMetrics {
+    - metricsId: int
+    - date: Date
+    - age: int
+    - sex: String
+    - heightCm: float
+    - weightKg: float
+  }
+
+  interface WorkoutRepository {
+    + addWorkout(userId: int, workout: Workout): Bool
+    + updateWorkout(userId: int, workout: Workout): Bool
+    + deleteWorkout(userId: int, date: Date): Bool
+    + findByCriteria(userId: int, date: Optional<Date>, workoutName: Optional<String>, exerciseName: Optional<String>): List<Workout>
+  }
+
+  interface BodyMetricsRepository {
+    + saveBodyMetrics(userId: int, metrics: BodyMetrics): Bool
+    + getLatest(userId: int): BodyMetrics
+    + getMetrics(userId: int, date: Optional<Date>); List<BodyMetrics> 
+  }
+
+  interface FoodLogRepository {
+    + saveFoodLog(userId: int, entry: FoodLogEntry): Bool 
+    + getFoodLogs(userId: int, from: Date, to: Date): List<FoodLogEntry>
+  }
+
+  class SqlWorkoutRepository {
+    + addWorkout(userId: int, workout: Workout): Bool 
+    + updateWorkout(userId: int, workout: Workout): Bool 
+    + deleteWorkout(userId: int, date: Date): Bool
+    + findByCriteria(userId: int, date: Optional<Date>, workoutName: Optional<String>, exerciseName: Optional<String>): List<Workout>
+  }
+
+  class SqlBodyMetricsRepository {
+    + saveBodyMetrics(userId: int, metrics: BodyMetrics): Bool
+    + getLatest(userId: int): BodyMetrics
+    + getMetrics(userId: int, date: Optional<Date>); List<BodyMetrics> 
+  }
+
+  class SqlFoodLogRepository {
+    + saveFoodLog(userId: int, entry: FoodLogEntry): Bool
+    + getFoodLogs(userIdL int, from: Date, to: Date): List<FoodLogEntry>
+  }
+
+  SqlWorkoutRepository ..|> WorkoutRepository
+  SqlBodyMetricsRepository ..|> BodyMetricsRepository
+  SqlFoodLogRepository ..|> FoodLogRepository
+
+  interface RankingStrategy {
+    + rank(workouts: List<Workout>, query: String): List<Workout>
+  }
+
+  class RecencyRankingStrategy {
+    + rank(workouts: List<Workout>, query: String): List<Workout>
+  }
+
+  class FrequencyRankingStrategy {
+    + rank(workouts: List<Workout>, query: String): List<Workout>
+  }
+
+  class HybridRankingStrategy {
+    + rank(workouts: List<Workout>, query: String): List<Workout>
+  }
+
+  RecencyRankingStrategy ..|> RankingStrategy
+  FrequencyRankingStrategy ..|> RankingStrategy
+  HybridRankingStrategy ..|> RankingStrategy
+
+  interface ReportStrategy {
+    + generate(userId: int, from: Date, to: Date)
+  }
+
+  class WorkoutReportStrategy {
+    + generate(userId: int, from: Date, to: Date)
+  }
+
+  class CalorieTrendStrategy {
+    + generate(userId: int, from: Date, to: Date)
+  }
+
+  WorkoutReportStrategy ..|> ReportStrategy
+  CalorieTrendStrategy ..|> ReportStrategy
+
+  class SearchService {
+    - workoutRepo: WorkoutRepository
+    - rankingStrategy: RankingStrategy
+    + search(userId: int, criteria: String): List<Workout>
+  }
+
+  class ReportService {
+    - workoutRepo: WorkoutRepository
+    - foodLogRepo: FoodLogRepository
+    - strategy: ReportStrategy
+    + generateReport(userId: int, from: Date, to: Date)
+  }
+
+  SearchService --> WorkoutRepository
+  SearchService --> RankingStrategy
+
+  ReportService --> WorkoutRepository
+  ReportService --> FoodLogRepository
+  ReportService --> ReportStrategy
+
+  enum ReportType {
+    WORKOUT_PROGRESS
+    CALORIE_TREND
+  }
+
+  interface ReportStrategyFactory {
+    + create(type: ReportType): ReportStrategy
+  }
+
+  class ReportStrategyFactory {
+    + create(type: ReportType): ReportStrategy
+  }
+
+  ReportStrategyFactory ..|> ReportStrategyFactory
+
+  ReportStrategyFactory --> WorkoutReportStrategy
+  ReportStrategyFactory --> CalorieTrendStrategy
+  ReportService --> ReportStrategyFactory
+}
+
+package Controller {
+
+  class WorkoutController{
+    - workoutRepo: WorkoutRepository
+    - searchService: SearchService
+    - reportService: ReportService
+
+    + logWorkout(userId: int, workoutData)
+    + editWorkout(userId: int, date: Date, updatedData)
+    + deleteWorkout(userId: int, date: Date)
+    + searchWorkouts(userId: int, criteria: String)
+    + showWorkoutReport(userId: int, from: Date, to: Date)
+  }
+
+  class BodyMetricsController{
+    - bodyRepo: BodyMetricsRepository
+    + storeBodyMetrics(userId: int, bodyData)
+    + showBodyMetricsForm(userId: int)
+  }
+
+  class NutritionController{
+    - foodRepo: FoodLogRepository
+    - reportService: ReportService
+
+    + logFood(userId, foodData)
+    + showCalorieTrend(userId: int, from: Date, to: Date)
+  }
+
+  WorkoutController --> WorkoutRepository
+  WorkoutController --> SearchService
+  WorkoutController --> ReportService
+
+  BodyMetricsController --> BodyMetricsRepository
+
+  NutritionController --> FoodLogRepository
+  NutritionController --> ReportService
+}
+
+package View{
+  class WorkoutFormView{
+    + renderForm(): JFrame 
+    + submitForm(): JFrame 
+  }
+
+  class WorkoutHistoryView{
+    + renderHistory(workouts: List<Workout>): JFrame
+  }
+
+  class WorkoutReportView{
+    + renderReport(from: Date, to: Date): JFrame 
+  }
+
+  class BodyMetricsView{
+    + renderForm(bodyData: Optional<>): JFrame 
+    + showSaveResult(message): JFrame 
+  }
+
+  class CalorieTrendView{
+    + showTrend(from: Date, to: Date): JFrame 
+  }
+
+  WorkoutFormView --> WorkoutController
+  WorkoutHistoryView --> WorkoutController
+  WorkoutReportView --> WorkoutController
+
+  BodyMetricsView --> BodyMetricsController
+  CalorieTrendView --> NutritionController
+
+  WorkoutController ..> WorkoutFormView
+  WorkoutController ..> WorkoutHistoryView
+  WorkoutController ..> WorkoutReportView
+
+  BodyMetricsController ..> BodyMetricsView
+  NutritionController ..> CalorieTrendView
+}
 @enduml
