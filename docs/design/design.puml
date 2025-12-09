@@ -2,7 +2,7 @@
 skinparam packageStyle rectangle
 skinparam shadowing false
 
-package "Model" {
+package model {
     interface UserRepository {
         +addUser(username, password)
         +validateLogin(username, password)
@@ -72,28 +72,20 @@ package "Model" {
         -calories: int
         -description: String
     }
+    interface WorkoutObserver {
+        +onWorkoutChanged(username, workouts)
+    }
+
+    interface BodyInfoObserver {
+        +onBodyInfoChanged(username, bodyInfo)
+    }
+
+    interface CalorieLogObserver {
+        +onCalorieLogChanged(username, entries)
+    }
 }
 
-interface NavigationContext {
-    +showScreen(name)
-    +ensureLoggedIn()
-    +getCurrentUser()
-    +setCurrentUser(user)
-}
-
-interface WorkoutObserver {
-    +onWorkoutChanged(username, workouts)
-}
-
-interface BodyInfoObserver {
-    +onBodyInfoChanged(username, bodyInfo)
-}
-
-interface CalorieLogObserver {
-    +onCalorieLogChanged(username, entries)
-}
-
-package "Controller" {
+package controller {
     class AuthController {
         -userRepository: UserRepository
     }
@@ -111,7 +103,7 @@ package "Controller" {
     }
 }
 
-package "View" {
+package view {
     class AppFrame {
         -authController: AuthController
         -workoutController: WorkoutController
@@ -131,9 +123,16 @@ package "View" {
     class CalorieLogScreen
     class CalorieGraphScreen
     class WorkoutGraphScreen
+
+    interface NavigationContext {
+        +showScreen(name)
+        +ensureLoggedIn()
+        +getCurrentUser()
+        +setCurrentUser(user)
+    }
 }
 
-package "Application" {
+package app {
     class Main {
         +main(args: String[])
     }
