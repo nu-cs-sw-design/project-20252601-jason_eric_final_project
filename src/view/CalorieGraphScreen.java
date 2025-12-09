@@ -8,8 +8,10 @@ import java.util.Map;
 public class CalorieGraphScreen extends JPanel {
 
     private final CalorieController calorieController;
+    private final NavigationContext navigationContext;
 
-    public CalorieGraphScreen(AppFrame app, CalorieController calorieController) {
+    public CalorieGraphScreen(NavigationContext navigationContext, CalorieController calorieController) {
+        this.navigationContext = navigationContext;
         this.calorieController = calorieController;
 
         setLayout(new BorderLayout());
@@ -21,15 +23,15 @@ public class CalorieGraphScreen extends JPanel {
 
         JButton refresh = new JButton("Refresh 7-day trend");
         refresh.addActionListener(e -> {
-            if (!app.ensureLoggedIn()) {
+            if (!navigationContext.ensureLoggedIn()) {
                 return;
             }
             LocalDate today = LocalDate.now();
             LocalDate start = today.minusDays(6);
-            int total = calorieController.totalBetween(app.getCurrentUser(), start, today);
+            int total = calorieController.totalBetween(navigationContext.getCurrentUser(), start, today);
 
             Map<LocalDate, Integer> perDay = new HashMap<>();
-            List<CalorieEntry> entries = calorieController.list(app.getCurrentUser());
+            List<CalorieEntry> entries = calorieController.list(navigationContext.getCurrentUser());
             entries.stream()
                     .filter(entry -> !entry.getDate().isBefore(start) && !entry.getDate().isAfter(today))
                     .forEach(entry -> perDay.merge(entry.getDate(), entry.getCalories(), Integer::sum));
@@ -51,7 +53,7 @@ public class CalorieGraphScreen extends JPanel {
         add(refresh, BorderLayout.SOUTH);
 
         JButton back = new JButton("Back to Menu");
-        back.addActionListener(e -> app.showScreen(AppFrame.MAIN_MENU));
+        back.addActionListener(e -> navigationContext.showScreen(AppFrame.MAIN_MENU));
         add(back, BorderLayout.NORTH);
     }
 }

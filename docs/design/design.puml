@@ -1,234 +1,199 @@
 @startuml
+skinparam packageStyle rectangle
+skinparam shadowing false
 
-package model{
+package "Model" {
+    interface UserRepository {
+        +addUser(username, password)
+        +validateLogin(username, password)
+        +find(username)
+    }
+    class InMemoryUserRepository {
+        -users: Map<String, User>
+    }
+    class User {
+        -username: String
+        -password: String
+    }
 
-  class User {
-    - userId: int
-    - username: String
-    - passwordHash: String
-  }
+    interface WorkoutRepository {
+        +add(username, Workout)
+        +update(username, Workout)
+        +find(username, date)
+        +delete(username, date)
+        +exists(username, date)
+        +search(username, WorkoutSearchCriteria)
+        +list(username)
+    }
+    class InMemoryWorkoutRepository {
+        -store: Map<String, Map<LocalDate, Workout>>
+    }
+    class Workout {
+        -date: LocalDate
+        -name: String
+        -exercises: List<Exercise>
+    }
+    class Exercise {
+        -name: String
+        -sets: int
+        -reps: int
+        -weight: double
+    }
+    class WorkoutSearchCriteria {
+        -date: Optional<LocalDate>
+        -workoutName: Optional<String>
+        -exerciseName: Optional<String>
+    }
 
-  ' add strategy pattern for passwordHash
-  
-  class Workout {
-    - workoutId: int
-    - date: Date
-    - name: String
-    - exerciseList: List<Exercise>
-  }
+    interface BodyInfoRepository {
+        +save(username, BodyInfo)
+        +fetch(username)
+    }
+    class InMemoryBodyInfoRepository {
+        -store: Map<String, BodyInfo>
+    }
+    class BodyInfo {
+        -age: int
+        -heightInches: int
+        -weightPounds: int
+        -sex: String
+    }
 
-  class Exercise {
-    - exerciseId: int
-    - name: String
-    - sets: int
-    - reps: int
-    - weight: float
-  }
-
-  class FoodLogEntry {
-    - entryId: int
-    - date: Date
-    - foodName: String
-    - calories: int
-  }
-
-  class BodyMetrics {
-    - metricsId: int
-    - date: Date
-    - age: int
-    - sex: String
-    - heightCm: float
-    - weightKg: float
-  }
-
-  interface WorkoutRepository {
-    + addWorkout(userId: int, workout: Workout): Bool
-    + updateWorkout(userId: int, workout: Workout): Bool
-    + deleteWorkout(userId: int, date: Date): Bool
-    + findByCriteria(userId: int, date: Optional<Date>, workoutName: Optional<String>, exerciseName: Optional<String>): List<Workout>
-  }
-
-  interface BodyMetricsRepository {
-    + saveBodyMetrics(userId: int, metrics: BodyMetrics): Bool
-    + getLatest(userId: int): BodyMetrics
-    + getMetrics(userId: int, date: Optional<Date>); List<BodyMetrics> 
-  }
-
-  interface FoodLogRepository {
-    + saveFoodLog(userId: int, entry: FoodLogEntry): Bool 
-    + getFoodLogs(userId: int, from: Date, to: Date): List<FoodLogEntry>
-  }
-
-  class SqlWorkoutRepository {
-    + addWorkout(userId: int, workout: Workout): Bool 
-    + updateWorkout(userId: int, workout: Workout): Bool 
-    + deleteWorkout(userId: int, date: Date): Bool
-    + findByCriteria(userId: int, date: Optional<Date>, workoutName: Optional<String>, exerciseName: Optional<String>): List<Workout>
-  }
-
-  class SqlBodyMetricsRepository {
-    + saveBodyMetrics(userId: int, metrics: BodyMetrics): Bool
-    + getLatest(userId: int): BodyMetrics
-    + getMetrics(userId: int, date: Optional<Date>); List<BodyMetrics> 
-  }
-
-  class SqlFoodLogRepository {
-    + saveFoodLog(userId: int, entry: FoodLogEntry): Bool
-    + getFoodLogs(userIdL int, from: Date, to: Date): List<FoodLogEntry>
-  }
-
-  SqlWorkoutRepository ..|> WorkoutRepository
-  SqlBodyMetricsRepository ..|> BodyMetricsRepository
-  SqlFoodLogRepository ..|> FoodLogRepository
-
-  interface RankingStrategy {
-    + rank(workouts: List<Workout>, query: String): List<Workout>
-  }
-
-  class RecencyRankingStrategy {
-    + rank(workouts: List<Workout>, query: String): List<Workout>
-  }
-
-  class FrequencyRankingStrategy {
-    + rank(workouts: List<Workout>, query: String): List<Workout>
-  }
-
-  class HybridRankingStrategy {
-    + rank(workouts: List<Workout>, query: String): List<Workout>
-  }
-
-  RecencyRankingStrategy ..|> RankingStrategy
-  FrequencyRankingStrategy ..|> RankingStrategy
-  HybridRankingStrategy ..|> RankingStrategy
-
-  interface ReportStrategy {
-    + generate(userId: int, from: Date, to: Date)
-  }
-
-  class WorkoutReportStrategy {
-    + generate(userId: int, from: Date, to: Date)
-  }
-
-  class CalorieTrendStrategy {
-    + generate(userId: int, from: Date, to: Date)
-  }
-
-  WorkoutReportStrategy ..|> ReportStrategy
-  CalorieTrendStrategy ..|> ReportStrategy
-
-  class SearchService {
-    - workoutRepo: WorkoutRepository
-    - rankingStrategy: RankingStrategy
-    + search(userId: int, criteria: String): List<Workout>
-  }
-
-  class ReportService {
-    - workoutRepo: WorkoutRepository
-    - foodLogRepo: FoodLogRepository
-    - strategy: ReportStrategy
-    + generateReport(userId: int, from: Date, to: Date)
-  }
-
-  SearchService --> WorkoutRepository
-  SearchService --> RankingStrategy
-
-  ReportService --> WorkoutRepository
-  ReportService --> FoodLogRepository
-  ReportService --> ReportStrategy
-
-  enum ReportType {
-    WORKOUT_PROGRESS
-    CALORIE_TREND
-  }
-
-  interface ReportStrategyFactory {
-    + create(type: ReportType): ReportStrategy
-  }
-
-  class ReportStrategyFactory {
-    + create(type: ReportType): ReportStrategy
-  }
-
-  ReportStrategyFactory ..|> ReportStrategyFactory
-
-  ReportStrategyFactory --> WorkoutReportStrategy
-  ReportStrategyFactory --> CalorieTrendStrategy
-  ReportService --> ReportStrategyFactory
+    interface CalorieLogRepository {
+        +log(username, CalorieEntry)
+        +list(username)
+        +totalForRange(username, from, to)
+    }
+    class InMemoryCalorieLogRepository {
+        -store: Map<String, List<CalorieEntry>>
+    }
+    class CalorieEntry {
+        -date: LocalDate
+        -calories: int
+        -description: String
+    }
 }
 
-package Controller {
-
-  class WorkoutController{
-    - workoutRepo: WorkoutRepository
-    - searchService: SearchService
-    - reportService: ReportService
-
-    + logWorkout(userId: int, workoutData)
-    + editWorkout(userId: int, date: Date, updatedData)
-    + deleteWorkout(userId: int, date: Date)
-    + searchWorkouts(userId: int, criteria: String)
-    + showWorkoutReport(userId: int, from: Date, to: Date)
-  }
-
-  class BodyMetricsController{
-    - bodyRepo: BodyMetricsRepository
-    + storeBodyMetrics(userId: int, bodyData)
-    + showBodyMetricsForm(userId: int)
-  }
-
-  class NutritionController{
-    - foodRepo: FoodLogRepository
-    - reportService: ReportService
-
-    + logFood(userId, foodData)
-    + showCalorieTrend(userId: int, from: Date, to: Date)
-  }
-
-  WorkoutController --> WorkoutRepository
-  WorkoutController --> SearchService
-  WorkoutController --> ReportService
-
-  BodyMetricsController --> BodyMetricsRepository
-
-  NutritionController --> FoodLogRepository
-  NutritionController --> ReportService
+interface NavigationContext {
+    +showScreen(name)
+    +ensureLoggedIn()
+    +getCurrentUser()
+    +setCurrentUser(user)
 }
 
-package View{
-  class WorkoutFormView{
-    + renderForm(): JFrame 
-    + submitForm(): JFrame 
-  }
-
-  class WorkoutHistoryView{
-    + renderHistory(workouts: List<Workout>): JFrame
-  }
-
-  class WorkoutReportView{
-    + renderReport(from: Date, to: Date): JFrame 
-  }
-
-  class BodyMetricsView{
-    + renderForm(bodyData: Optional<>): JFrame 
-    + showSaveResult(message): JFrame 
-  }
-
-  class CalorieTrendView{
-    + showTrend(from: Date, to: Date): JFrame 
-  }
-
-  WorkoutFormView --> WorkoutController
-  WorkoutHistoryView --> WorkoutController
-  WorkoutReportView --> WorkoutController
-
-  BodyMetricsView --> BodyMetricsController
-  CalorieTrendView --> NutritionController
-
-  WorkoutController ..> WorkoutFormView
-  WorkoutController ..> WorkoutHistoryView
-  WorkoutController ..> WorkoutReportView
-
-  BodyMetricsController ..> BodyMetricsView
-  NutritionController ..> CalorieTrendView
+interface WorkoutObserver {
+    +onWorkoutChanged(username, workouts)
 }
+
+interface BodyInfoObserver {
+    +onBodyInfoChanged(username, bodyInfo)
+}
+
+interface CalorieLogObserver {
+    +onCalorieLogChanged(username, entries)
+}
+
+package "Controller" {
+    class AuthController {
+        -userRepository: UserRepository
+    }
+    class WorkoutController {
+        -workoutRepository: WorkoutRepository
+        -observers: List<WorkoutObserver>
+    }
+    class BodyInfoController {
+        -repository: BodyInfoRepository
+        -observers: List<BodyInfoObserver>
+    }
+    class CalorieController {
+        -repository: CalorieLogRepository
+        -observers: List<CalorieLogObserver>
+    }
+}
+
+package "View" {
+    class AppFrame {
+        -authController: AuthController
+        -workoutController: WorkoutController
+        -bodyInfoController: BodyInfoController
+        -calorieController: CalorieController
+        -currentUser: String
+    }
+    class WelcomeScreen
+    class LoginScreen
+    class CreateAccountScreen
+    class MainMenuScreen
+    class LogWorkoutScreen
+    class EditWorkoutScreen
+    class DeleteWorkoutScreen
+    class SearchWorkoutScreen
+    class BodyInfoScreen
+    class CalorieLogScreen
+    class CalorieGraphScreen
+    class WorkoutGraphScreen
+}
+
+package "Application" {
+    class Main {
+        +main(args: String[])
+    }
+}
+
+InMemoryUserRepository ..|> UserRepository
+InMemoryWorkoutRepository ..|> WorkoutRepository
+InMemoryBodyInfoRepository ..|> BodyInfoRepository
+InMemoryCalorieLogRepository ..|> CalorieLogRepository
+
+InMemoryUserRepository --> User
+BodyInfoRepository --> BodyInfo
+CalorieLogRepository --> CalorieEntry
+WorkoutRepository --> Workout
+
+Workout "1" o-- "*" Exercise
+WorkoutSearchCriteria --> Workout
+
+AuthController --> UserRepository
+WorkoutController --> WorkoutRepository
+WorkoutController o--> WorkoutObserver
+BodyInfoController --> BodyInfoRepository
+BodyInfoController o--> BodyInfoObserver
+CalorieController --> CalorieLogRepository
+CalorieController o--> CalorieLogObserver
+
+AppFrame ..|> NavigationContext
+AppFrame --> AuthController
+AppFrame --> WorkoutController
+AppFrame --> BodyInfoController
+AppFrame --> CalorieController
+
+LoginScreen --> AuthController
+CreateAccountScreen --> AuthController
+LogWorkoutScreen --> WorkoutController
+EditWorkoutScreen --> WorkoutController
+DeleteWorkoutScreen --> WorkoutController
+SearchWorkoutScreen --> WorkoutController
+WorkoutGraphScreen --> WorkoutController
+BodyInfoScreen --> BodyInfoController
+CalorieLogScreen --> CalorieController
+CalorieGraphScreen --> CalorieController
+
+WelcomeScreen --> NavigationContext
+LoginScreen --> NavigationContext
+CreateAccountScreen --> NavigationContext
+MainMenuScreen --> NavigationContext
+LogWorkoutScreen --> NavigationContext
+EditWorkoutScreen --> NavigationContext
+DeleteWorkoutScreen --> NavigationContext
+SearchWorkoutScreen --> NavigationContext
+BodyInfoScreen --> NavigationContext
+CalorieLogScreen --> NavigationContext
+CalorieGraphScreen --> NavigationContext
+WorkoutGraphScreen --> NavigationContext
+
+WorkoutGraphScreen ..|> WorkoutObserver
+BodyInfoScreen ..|> BodyInfoObserver
+CalorieLogScreen ..|> CalorieLogObserver
+
+Main --> AppFrame
+
 @enduml

@@ -4,8 +4,10 @@ import java.time.LocalDate;
 public class DeleteWorkoutScreen extends JPanel {
 
     private final WorkoutController workoutController;
+    private final NavigationContext navigationContext;
 
-    public DeleteWorkoutScreen(AppFrame app, WorkoutController workoutController) {
+    public DeleteWorkoutScreen(NavigationContext navigationContext, WorkoutController workoutController) {
+        this.navigationContext = navigationContext;
         this.workoutController = workoutController;
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -14,14 +16,14 @@ public class DeleteWorkoutScreen extends JPanel {
         JButton delete = new JButton("Delete Workout");
 
         delete.addActionListener(e -> {
-            if (!app.ensureLoggedIn()) {
+            if (!navigationContext.ensureLoggedIn()) {
                 return;
             }
             try {
                 LocalDate target = LocalDate.parse(date.getText().trim());
-                if (workoutController.deleteWorkout(app.getCurrentUser(), target)) {
+                if (workoutController.deleteWorkout(navigationContext.getCurrentUser(), target)) {
                     JOptionPane.showMessageDialog(this, "Workout deleted.");
-                    app.showScreen(AppFrame.MAIN_MENU);
+                    navigationContext.showScreen(AppFrame.MAIN_MENU);
                 } else {
                     JOptionPane.showMessageDialog(this, "No workout on this date.");
                 }
@@ -35,7 +37,7 @@ public class DeleteWorkoutScreen extends JPanel {
         add(delete);
 
         JButton back = new JButton("Back to Menu");
-        back.addActionListener(e -> app.showScreen(AppFrame.MAIN_MENU));
+        back.addActionListener(e -> navigationContext.showScreen(AppFrame.MAIN_MENU));
         add(back);
     }
 }

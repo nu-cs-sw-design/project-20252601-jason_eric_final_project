@@ -5,7 +5,7 @@ public class LoginScreen extends JPanel {
 
     private final AuthController authController;
 
-    public LoginScreen(AppFrame app, AuthController authController) {
+    public LoginScreen(NavigationContext navigationContext, AuthController authController) {
         this.authController = authController;
 
         setLayout(new GridLayout(6, 1));
@@ -26,15 +26,15 @@ public class LoginScreen extends JPanel {
             }
 
             if (authController.login(username, password)) {
-                app.setCurrentUser(username);
+                navigationContext.setCurrentUser(username);
                 JOptionPane.showMessageDialog(this, "Welcome, " + username + "!");
-                app.showScreen(AppFrame.MAIN_MENU);
+                navigationContext.showScreen(AppFrame.MAIN_MENU);
             } else {
                 JOptionPane.showMessageDialog(this, "Invalid username or password.");
             }
         });
 
-        createBtn.addActionListener(e -> app.showScreen(AppFrame.CREATE_ACCOUNT));
+        createBtn.addActionListener(e -> navigationContext.showScreen(AppFrame.CREATE_ACCOUNT));
 
         add(new JLabel("Username:"));
         add(userField);

@@ -4,7 +4,7 @@ public class CreateAccountScreen extends JPanel {
 
     private final AuthController authController;
 
-    public CreateAccountScreen(AppFrame app, AuthController authController) {
+    public CreateAccountScreen(NavigationContext navigationContext, AuthController authController) {
         this.authController = authController;
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -24,7 +24,7 @@ public class CreateAccountScreen extends JPanel {
 
             if (authController.register(username, password)) {
                 JOptionPane.showMessageDialog(this, "Account created! Please log in.");
-                app.showScreen(AppFrame.LOGIN);
+                navigationContext.showScreen(AppFrame.LOGIN);
             } else {
                 JOptionPane.showMessageDialog(this, "Username already taken.");
             }

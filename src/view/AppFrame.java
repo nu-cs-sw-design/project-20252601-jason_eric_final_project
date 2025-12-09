@@ -1,7 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 
-public class AppFrame extends JFrame {
+public class AppFrame extends JFrame implements NavigationContext {
 
     private final CardLayout cardLayout;
     private final JPanel cardPanel;
@@ -66,18 +66,22 @@ public class AppFrame extends JFrame {
         cardPanel.add(new CalorieGraphScreen(this, calorieController), CALORIE_GRAPH);
     }
 
+    @Override
     public void showScreen(String name) {
         cardLayout.show(cardPanel, name);
     }
 
+    @Override
     public String getCurrentUser() {
         return currentUser;
     }
 
+    @Override
     public void setCurrentUser(String currentUser) {
         this.currentUser = currentUser;
     }
 
+    @Override
     public boolean ensureLoggedIn() {
         if (currentUser == null || currentUser.isBlank()) {
             JOptionPane.showMessageDialog(this,

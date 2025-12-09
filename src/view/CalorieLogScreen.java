@@ -5,8 +5,10 @@ import java.util.stream.Collectors;
 public class CalorieLogScreen extends JPanel {
 
     private final CalorieController calorieController;
+    private final NavigationContext navigationContext;
 
-    public CalorieLogScreen(AppFrame app, CalorieController calorieController) {
+    public CalorieLogScreen(NavigationContext navigationContext, CalorieController calorieController) {
+        this.navigationContext = navigationContext;
         this.calorieController = calorieController;
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -22,7 +24,7 @@ public class CalorieLogScreen extends JPanel {
         JButton refresh = new JButton("Refresh");
 
         save.addActionListener(e -> {
-            if (!app.ensureLoggedIn()) {
+            if (!navigationContext.ensureLoggedIn()) {
                 return;
             }
             try {
@@ -38,18 +40,18 @@ public class CalorieLogScreen extends JPanel {
                     return;
                 }
 
-                calorieController.logEntry(app.getCurrentUser(),
+                calorieController.logEntry(navigationContext.getCurrentUser(),
                         new CalorieEntry(date, calories, description));
                 JOptionPane.showMessageDialog(this, "Entry saved.");
                 descriptionField.setText("");
                 caloriesField.setText("");
-                updateLog(app, logView);
+                updateLog(logView);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Invalid input: " + ex.getMessage());
             }
         });
 
-        refresh.addActionListener(e -> updateLog(app, logView));
+        refresh.addActionListener(e -> updateLog(logView));
 
         add(new JLabel("Date (YYYY-MM-DD):"));
         add(dateField);
@@ -62,15 +64,15 @@ public class CalorieLogScreen extends JPanel {
         add(new JScrollPane(logView));
 
         JButton back = new JButton("Back to Menu");
-        back.addActionListener(e -> app.showScreen(AppFrame.MAIN_MENU));
+        back.addActionListener(e -> navigationContext.showScreen(AppFrame.MAIN_MENU));
         add(back);
     }
 
-    private void updateLog(AppFrame app, JTextArea logView) {
-        if (!app.ensureLoggedIn()) {
+    private void updateLog(JTextArea logView) {
+        if (!navigationContext.ensureLoggedIn()) {
             return;
         }
-        String log = calorieController.list(app.getCurrentUser()).stream()
+        String log = calorieController.list(navigationContext.getCurrentUser()).stream()
                 .sorted((a, b) -> a.getDate().compareTo(b.getDate()))
                 .map(entry -> entry.getDate() + ": " + entry.getCalories() + " kcal - " + entry.getDescription())
                 .collect(Collectors.joining("\n"));

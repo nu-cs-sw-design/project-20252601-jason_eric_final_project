@@ -6,8 +6,10 @@ import java.util.stream.Collectors;
 public class SearchWorkoutScreen extends JPanel {
 
     private final WorkoutController workoutController;
+    private final NavigationContext navigationContext;
 
-    public SearchWorkoutScreen(AppFrame app, WorkoutController workoutController) {
+    public SearchWorkoutScreen(NavigationContext navigationContext, WorkoutController workoutController) {
+        this.navigationContext = navigationContext;
         this.workoutController = workoutController;
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -20,7 +22,7 @@ public class SearchWorkoutScreen extends JPanel {
         JButton searchBtn = new JButton("Search");
 
         searchBtn.addActionListener(e -> {
-            if (!app.ensureLoggedIn()) {
+            if (!navigationContext.ensureLoggedIn()) {
                 return;
             }
             Optional<LocalDate> date = parseDate(dateField.getText());
@@ -33,7 +35,7 @@ public class SearchWorkoutScreen extends JPanel {
 
             WorkoutSearchCriteria criteria =
                     new WorkoutSearchCriteria(date, workoutName, exerciseName);
-            String res = workoutController.search(app.getCurrentUser(), criteria).stream()
+            String res = workoutController.search(navigationContext.getCurrentUser(), criteria).stream()
                     .map(Workout::describe)
                     .collect(Collectors.joining("\n\n"));
             results.setText(res.isEmpty() ? "No matches found." : res);
@@ -49,7 +51,7 @@ public class SearchWorkoutScreen extends JPanel {
         add(new JScrollPane(results));
 
         JButton back = new JButton("Back to Menu");
-        back.addActionListener(e -> app.showScreen(AppFrame.MAIN_MENU));
+        back.addActionListener(e -> navigationContext.showScreen(AppFrame.MAIN_MENU));
         add(back);
     }
 

@@ -5,9 +5,11 @@ import java.util.Arrays;
 public class EditWorkoutScreen extends JPanel {
 
     private final WorkoutController workoutController;
+    private final NavigationContext navigationContext;
     private Workout loadedWorkout;
 
-    public EditWorkoutScreen(AppFrame app, WorkoutController workoutController) {
+    public EditWorkoutScreen(NavigationContext navigationContext, WorkoutController workoutController) {
+        this.navigationContext = navigationContext;
         this.workoutController = workoutController;
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -21,12 +23,12 @@ public class EditWorkoutScreen extends JPanel {
         JButton save = new JButton("Save Changes");
 
         load.addActionListener(e -> {
-            if (!app.ensureLoggedIn()) {
+            if (!navigationContext.ensureLoggedIn()) {
                 return;
             }
             try {
                 LocalDate date = LocalDate.parse(dateField.getText().trim());
-                workoutController.getWorkout(app.getCurrentUser(), date)
+                workoutController.getWorkout(navigationContext.getCurrentUser(), date)
                         .ifPresentOrElse(workout -> {
                             loadedWorkout = workout;
                             workoutName.setText(workout.getName());
@@ -51,7 +53,7 @@ public class EditWorkoutScreen extends JPanel {
         });
 
         save.addActionListener(e -> {
-            if (!app.ensureLoggedIn()) {
+            if (!navigationContext.ensureLoggedIn()) {
                 return;
             }
             if (loadedWorkout == null) {
@@ -91,7 +93,7 @@ public class EditWorkoutScreen extends JPanel {
                             "Please enter at least one exercise line.");
                     return;
                 }
-                if (workoutController.editWorkout(app.getCurrentUser(), updated)) {
+                if (workoutController.editWorkout(navigationContext.getCurrentUser(), updated)) {
                     loadedWorkout = updated;
                     if (parseError[0]) {
                         JOptionPane.showMessageDialog(this,
@@ -99,7 +101,7 @@ public class EditWorkoutScreen extends JPanel {
                     } else {
                         JOptionPane.showMessageDialog(this, "Workout updated.");
                     }
-                    app.showScreen(AppFrame.MAIN_MENU);
+                    navigationContext.showScreen(AppFrame.MAIN_MENU);
                 } else {
                     JOptionPane.showMessageDialog(this,
                             "Unable to update workout. Load it again.");
@@ -120,7 +122,7 @@ public class EditWorkoutScreen extends JPanel {
         add(save);
 
         JButton back = new JButton("Back to Menu");
-        back.addActionListener(e -> app.showScreen(AppFrame.MAIN_MENU));
+        back.addActionListener(e -> navigationContext.showScreen(AppFrame.MAIN_MENU));
         add(back);
     }
 }

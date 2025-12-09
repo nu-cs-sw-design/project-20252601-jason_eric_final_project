@@ -3,8 +3,10 @@ import javax.swing.*;
 public class BodyInfoScreen extends JPanel {
 
     private final BodyInfoController bodyInfoController;
+    private final NavigationContext navigationContext;
 
-    public BodyInfoScreen(AppFrame app, BodyInfoController bodyInfoController) {
+    public BodyInfoScreen(NavigationContext navigationContext, BodyInfoController bodyInfoController) {
+        this.navigationContext = navigationContext;
         this.bodyInfoController = bodyInfoController;
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -19,7 +21,7 @@ public class BodyInfoScreen extends JPanel {
         JButton save = new JButton("Save Body Info");
 
         save.addActionListener(e -> {
-            if (!app.ensureLoggedIn()) {
+            if (!navigationContext.ensureLoggedIn()) {
                 return;
             }
             try {
@@ -33,10 +35,10 @@ public class BodyInfoScreen extends JPanel {
                     return;
                 }
 
-                bodyInfoController.save(app.getCurrentUser(), new BodyInfo(a, h, w, sex));
+                bodyInfoController.save(navigationContext.getCurrentUser(), new BodyInfo(a, h, w, sex));
                 latest.setText("Age: " + a + "\nSex: " + sex + "\nHeight: " + h + " in\nWeight: " + w + " lbs");
                 JOptionPane.showMessageDialog(this, "Body information saved.");
-                app.showScreen(AppFrame.MAIN_MENU);
+                navigationContext.showScreen(AppFrame.MAIN_MENU);
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "Please provide valid numbers.");
             }
@@ -44,8 +46,8 @@ public class BodyInfoScreen extends JPanel {
 
         JButton refresh = new JButton("Load Latest");
         refresh.addActionListener(e -> {
-            if (app.ensureLoggedIn()) {
-                bodyInfoController.fetch(app.getCurrentUser())
+            if (navigationContext.ensureLoggedIn()) {
+                bodyInfoController.fetch(navigationContext.getCurrentUser())
                         .ifPresentOrElse(info -> latest.setText(
                                 "Age: " + info.getAge() +
                                         "\nSex: " + info.getSex() +
@@ -68,7 +70,7 @@ public class BodyInfoScreen extends JPanel {
         add(new JScrollPane(latest));
 
         JButton back = new JButton("Back to Menu");
-        back.addActionListener(e -> app.showScreen(AppFrame.MAIN_MENU));
+        back.addActionListener(e -> navigationContext.showScreen(AppFrame.MAIN_MENU));
         add(back);
     }
 }
