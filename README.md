@@ -1,12 +1,14 @@
-# Project: NAME
+# Project: Fitness Tracker 
 
 ## Contributors
-NAME, NAME, NAME
+Jason Hu, Mingye Zhang
 
 ## Dependencies
-- LANGUAGE AND VERSION
-- EXTERNAL LIBRARIES
-- ETC
+- JDK (11+)
 
 ## Build Instructions
-HOW TO BUILD YOUR PROJECT.
+```bash
+mkdir -p out
+javac -d out $(find src -name '*.java')
+java -cp out Main
+```
